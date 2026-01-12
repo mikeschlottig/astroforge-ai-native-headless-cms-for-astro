@@ -1,72 +1,115 @@
-/* This is a demo sidebar. **COMPULSORY** Edit this file to customize the sidebar OR remove it from appLayout OR don't use appLayout at all */
 import React from "react";
-import { Home, Layers, Compass, Star, Settings, LifeBuoy } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { 
+  LayoutDashboard, 
+  Bot, 
+  Database, 
+  Settings, 
+  Sparkles,
+  Zap,
+  HardDrive,
+  Github
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-  SidebarSeparator,
-  SidebarInput,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuAction,
-  SidebarMenuBadge,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
-
+import { cn } from "@/lib/utils";
 export function AppSidebar(): JSX.Element {
+  const location = useLocation();
+  const navItems = [
+    { title: "Dashboard", icon: LayoutDashboard, path: "/" },
+    { title: "Architect", icon: Bot, path: "/architect" },
+    { title: "Cosmos", icon: Database, path: "/content" },
+    { title: "Forge Settings", icon: Settings, path: "/settings" },
+  ];
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1">
-          <div className="h-6 w-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500" />
-          <span className="text-sm font-medium">Demo Sidebar</span>
-        </div>
-        <SidebarInput placeholder="Search" />
+    <Sidebar className="border-none bg-slate-950 text-slate-300">
+      <SidebarHeader className="h-16 flex items-center px-6 border-b border-white/5">
+        <Link to="/" className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-400 to-indigo-600 shadow-lg shadow-sky-500/20">
+            <Sparkles className="h-5 w-5 text-white" />
+          </div>
+          <span className="text-lg font-bold tracking-tighter text-white">ASTRO<span className="text-sky-400">FORGE</span></span>
+        </Link>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="px-3 py-6">
         <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive>
-                <a href="#"><Home /> <span>Home</span></a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Layers /> <span>Projects</span></a>
-              </SidebarMenuButton>
-              <SidebarMenuAction>
-                <Star className="size-4" />
-              </SidebarMenuAction>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Compass /> <span>Explore</span></a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
+            Operations
+          </SidebarGroupLabel>
+          <SidebarMenu className="gap-1">
+            {navItems.map((item) => (
+              <SidebarMenuItem key={item.path}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === item.path}
+                  className={cn(
+                    "h-10 px-3 transition-all duration-200 group relative",
+                    location.pathname === item.path 
+                      ? "bg-sky-500/10 text-sky-400 ring-1 ring-inset ring-sky-500/20 shadow-[0_0_15px_-5px_rgba(56,189,248,0.3)]" 
+                      : "hover:bg-white/5 hover:text-slate-100"
+                  )}
+                >
+                  <Link to={item.path}>
+                    <item.icon className={cn("size-4", location.pathname === item.path ? "text-sky-400" : "text-slate-500 group-hover:text-slate-300")} />
+                    <span className="font-medium text-sm">{item.title}</span>
+                    {location.pathname === item.path && (
+                      <div className="absolute right-2 h-1 w-1 rounded-full bg-sky-400" />
+                    )}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Quick Links</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Star /> <span>Starred</span></a>
-              </SidebarMenuButton>
-              <SidebarMenuBadge>5</SidebarMenuBadge>
-            </SidebarMenuItem>
-          </SidebarMenu>
+        <SidebarGroup className="mt-8">
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
+            Status
+          </SidebarGroupLabel>
+          <div className="space-y-4 px-3">
+            <div className="space-y-2">
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-slate-400">R2 STORAGE</span>
+                <span className="text-slate-200">2.4 GB</span>
+              </div>
+              <div className="h-1 w-full rounded-full bg-slate-800">
+                <div className="h-full w-[45%] rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-slate-400">AI CAPACITY</span>
+                <span className="text-slate-200">82%</span>
+              </div>
+              <div className="h-1 w-full rounded-full bg-slate-800">
+                <div className="h-full w-[82%] rounded-full bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
+              </div>
+            </div>
+          </div>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <div className="px-2 text-xs text-muted-foreground">A simple shadcn sidebar</div>
+      <SidebarFooter className="p-6">
+        <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Zap className="h-4 w-4 text-amber-400" />
+            <span className="text-xs font-semibold text-slate-200">Deploy Hook</span>
+          </div>
+          <button className="w-full rounded-lg bg-slate-800 py-2 text-[10px] font-mono text-slate-300 hover:bg-slate-700 transition-colors border border-white/5 uppercase tracking-tighter">
+            Trigger Build
+          </button>
+        </div>
+        <div className="flex items-center justify-between mt-4 px-2">
+          <span className="text-[10px] text-slate-600 font-mono">v1.0.4-LTS</span>
+          <Github className="size-4 text-slate-600 hover:text-slate-400 cursor-pointer transition-colors" />
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

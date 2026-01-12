@@ -1,138 +1,129 @@
-// Home page of the app.
-// Currently a demo placeholder "please wait" screen.
-// Replace this file with your actual app UI. Do not delete it to use some other file as homepage. Simply replace the entire contents of this file.
-
-import { useEffect, useMemo, useState } from 'react'
-import { Sparkles } from 'lucide-react'
-
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { HAS_TEMPLATE_DEMO, TemplateDemo } from '@/components/TemplateDemo'
-import { Button } from '@/components/ui/button'
-import { Toaster, toast } from '@/components/ui/sonner'
-
-function formatDuration(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
+import React from 'react';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from 'recharts';
+import { 
+  Activity, 
+  Database, 
+  Cpu, 
+  Globe, 
+  ArrowUpRight,
+  Sparkles
+} from 'lucide-react';
+import { Toaster } from '@/components/ui/sonner';
+const MOCK_DATA = [
+  { name: '00:00', value: 400 },
+  { name: '04:00', value: 300 },
+  { name: '08:00', value: 600 },
+  { name: '12:00', value: 800 },
+  { name: '16:00', value: 500 },
+  { name: '20:00', value: 900 },
+  { name: '23:59', value: 700 },
+];
 export function HomePage() {
-  const [coins, setCoins] = useState(0)
-  const [isRunning, setIsRunning] = useState(false)
-  const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [elapsedMs, setElapsedMs] = useState(0)
-
-  useEffect(() => {
-    if (!isRunning || startedAt === null) return
-
-    const t = setInterval(() => {
-      setElapsedMs(Date.now() - startedAt)
-    }, 250)
-
-    return () => clearInterval(t)
-  }, [isRunning, startedAt])
-
-  const formatted = useMemo(() => formatDuration(elapsedMs), [elapsedMs])
-
-  const onPleaseWait = () => {
-    setCoins((c) => c + 1)
-
-    if (!isRunning) {
-      // Resume from the current elapsed time
-      setStartedAt(Date.now() - elapsedMs)
-      setIsRunning(true)
-      toast.success('Building your app…', {
-        description: "Hang tight — we're setting everything up.",
-      })
-      return
-    }
-
-    setIsRunning(false)
-    toast.info('Still working…', {
-      description: 'You can come back in a moment.',
-    })
-  }
-
-  const onReset = () => {
-    setCoins(0)
-    setIsRunning(false)
-    setStartedAt(null)
-    setElapsedMs(0)
-    toast('Reset complete')
-  }
-
-  const onAddCoin = () => {
-    setCoins((c) => c + 1)
-    toast('Coin added')
-  }
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-      <ThemeToggle />
-      <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20 pointer-events-none" />
-
-      <div className="text-center space-y-8 relative z-10 animate-fade-in w-full">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary floating">
-            <Sparkles className="w-8 h-8 text-white rotating" />
+    <AppLayout container>
+      <div className="space-y-10">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden rounded-3xl border border-white/5 bg-slate-900/40 p-8 md:p-12 lg:p-16">
+          <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-sky-500/10 blur-[100px]" />
+          <div className="relative z-10 max-w-3xl space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/5 px-3 py-1 text-xs font-medium text-sky-400">
+              <Sparkles className="h-3 w-3" />
+              AI Architect Active
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white">
+              The Bridge <br />
+              <span className="text-slate-500">of AstroForge</span>
+            </h1>
+            <p className="text-lg text-slate-400 leading-relaxed max-w-xl">
+              Monitor your content cosmos and orchestrate your Astro builds with the power of integrated AI intelligence.
+            </p>
+            <div className="flex gap-4">
+              <button className="rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition-all hover:bg-sky-400 hover:scale-105 active:scale-95">
+                Quick Deploy
+              </button>
+              <button className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-300 backdrop-blur-sm transition-all hover:bg-white/10">
+                View Logs
+              </button>
+            </div>
           </div>
+        </section>
+        {/* Stats Grid */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { title: "Total Nodes", value: "1,248", icon: Database, color: "text-sky-400", trend: "+12%" },
+            { title: "AI Queries", value: "48.2k", icon: Cpu, color: "text-indigo-400", trend: "+5.4%" },
+            { title: "Traffic", value: "852k", icon: Globe, color: "text-emerald-400", trend: "+18%" },
+            { title: "Latency", value: "12ms", icon: Activity, color: "text-rose-400", trend: "-2ms" },
+          ].map((stat, i) => (
+            <Card key={i} className="border-white/5 bg-slate-900/40 backdrop-blur-sm overflow-hidden group">
+              <CardContent className="p-6 relative">
+                <div className={`absolute top-0 right-0 p-4 ${stat.color} opacity-20 group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="h-12 w-12" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-mono uppercase tracking-widest text-slate-500">{stat.title}</p>
+                  <div className="flex items-end gap-2">
+                    <h3 className="text-3xl font-bold text-white">{stat.value}</h3>
+                    <span className="text-[10px] font-bold text-emerald-500 flex items-center mb-1">
+                      <ArrowUpRight className="h-3 w-3" /> {stat.trend}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-
-        <div className="space-y-3">
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight">
-            Creating your <span className="text-gradient">app</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-pretty">
-            Your application would be ready soon.
-          </p>
-        </div>
-
-        {HAS_TEMPLATE_DEMO ? (
-          <div className="max-w-5xl mx-auto text-left">
-            <TemplateDemo />
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={onPleaseWait}
-                className="btn-gradient px-8 py-4 text-lg font-semibold hover:-translate-y-0.5 transition-all duration-200"
-                aria-live="polite"
-              >
-                Please Wait
-              </Button>
+        {/* Activity Chart */}
+        <Card className="border-white/5 bg-slate-900/40 backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-6">
+            <CardTitle className="text-sm font-mono tracking-widest uppercase text-slate-400">System Activity (24h)</CardTitle>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-sky-400 uppercase tracking-tighter">Live Monitor</span>
             </div>
-
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div>
-                Time elapsed:{' '}
-                <span className="font-medium tabular-nums text-foreground">{formatted}</span>
-              </div>
-              <div>
-                Coins:{' '}
-                <span className="font-medium tabular-nums text-foreground">{coins}</span>
-              </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={MOCK_DATA}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
+                  <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px' }}
+                    itemStyle={{ color: '#0ea5e9' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#0ea5e9" 
+                    strokeWidth={2}
+                    fillOpacity={1} 
+                    fill="url(#colorValue)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
-
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={onReset}>
-                Reset
-              </Button>
-              <Button variant="outline" size="sm" onClick={onAddCoin}>
-                Add Coin
-              </Button>
-            </div>
-          </>
-        )}
+          </CardContent>
+        </Card>
       </div>
-
-      <footer className="absolute bottom-8 text-center text-muted-foreground/80">
-        <p>Powered by Cloudflare</p>
-      </footer>
-
       <Toaster richColors closeButton />
-    </div>
-  )
+    </AppLayout>
+  );
 }

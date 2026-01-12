@@ -1,192 +1,98 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { useStore } from '@/lib/store';
-import { CollectionGrid } from '@/components/cosmos/CollectionGrid';
-import { SchemaEditor } from '@/components/cosmos/SchemaEditor';
-import { EntryForm } from '@/components/cosmos/EntryForm';
-import { EntryList } from '@/components/cosmos/EntryList';
-import {
+import { Card, CardContent } from '@/components/ui/card';
+import { 
+  Database, 
+  Plus, 
+  Search, 
+  Filter, 
+  MoreHorizontal,
   ChevronRight,
-  ArrowLeft,
-  Download
+  FileText,
+  Image as ImageIcon,
+  Tag
 } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { toast } from 'sonner';
-type ViewState =
-  | { type: 'grid' }
-  | { type: 'collection'; collectionId: string }
-  | { type: 'entry'; collectionId: string; entryId?: string };
 export function ContentPage() {
-  const [view, setView] = useState<ViewState>({ type: 'grid' });
-  const collections = useStore(s => s.collections);
-  const entries = useStore(s => s.entries);
-  const activeCollection = view.type !== 'grid'
-    ? collections.find(c => c.id === view.collectionId)
-    : null;
-  const navigateToGrid = () => setView({ type: 'grid' });
-  const navigateToCollection = (id: string) => setView({ type: 'collection', collectionId: id });
-  const navigateToEntry = (colId: string, entryId?: string) => setView({ type: 'entry', collectionId: colId, entryId });
-
-  const handleExportJSON = (collectionId: string) => {
-    const collectionEntries = entries.filter(e => e.collectionId === collectionId);
-    const blob = new Blob([JSON.stringify(collectionEntries, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `collection-${collectionId}-export.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Collection exported as JSON');
-  };
-
-  const handleExportCSV = (collection: any) => {
-    const collectionEntries = entries.filter(e => e.collectionId === collection.id);
-    if (collectionEntries.length === 0) {
-      toast.error('No entries to export');
-      return;
-    }
-    const headers = collection.fields.map((f: any) => f.key);
-    const csvRows = [];
-    csvRows.push(headers.join(','));
-    for (const entry of collectionEntries) {
-      const row = headers.map((header: string) => {
-        let val = entry.data[header] || '';
-        if (typeof val === 'string') {
-          val = val.replace(/"/g, '""');
-          if (val.includes(',') || val.includes('"') || val.includes('\n')) {
-            val = `"${val}"`;
-          }
-        }
-        return val;
-      });
-      csvRows.push(row.join(','));
-    }
-    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `collection-${collection.id}-export.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Collection exported as CSV');
-  };
-
+  const collections = [
+    { name: "Blog Posts", count: 24, icon: FileText, color: "text-sky-400" },
+    { name: "Authors", count: 8, icon: Tag, color: "text-indigo-400" },
+    { name: "Media Assets", count: 142, icon: ImageIcon, color: "text-emerald-400" },
+  ];
   return (
     <AppLayout container>
-      <div className="space-y-8 min-h-[60vh]">
-        <nav className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-slate-500">
-          <button
-            onClick={navigateToGrid}
-            className="hover:text-sky-400 transition-colors"
-          >
-            Cosmos
-          </button>
-          {activeCollection && (
-            <>
-              <ChevronRight className="h-3 w-3" />
-              <button
-                onClick={() => navigateToCollection(activeCollection.id)}
-                className="hover:text-sky-400 transition-colors"
-              >
-                {activeCollection.name}
-              </button>
-            </>
-          )}
-          {view.type === 'entry' && (
-            <>
-              <ChevronRight className="h-3 w-3" />
-              <span className="text-slate-200">{view.entryId ? 'Edit Entry' : 'New Entry'}</span>
-            </>
-          )}
-        </nav>
-        {view.type === 'grid' && (
-          <div className="space-y-10 animate-fade-in" key="cosmos-grid">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-4xl font-bold text-white tracking-tighter">Content Cosmos</h1>
-              <p className="text-slate-500 max-w-2xl">
-                The orchestration layer for your data. Define schemas and manage content across your Astro applications.
-              </p>
-            </div>
-            <CollectionGrid onSelect={navigateToCollection} />
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold text-white tracking-tight">Content Cosmos</h1>
+            <p className="text-sm text-slate-500 font-mono">Phase 2: Management Protocol Initializing...</p>
           </div>
-        )}
-        {view.type === 'collection' && activeCollection && (
-          <div className="space-y-6 animate-slide-up" key={`col-${activeCollection.id}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={navigateToGrid} className="rounded-xl border border-white/5">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-white">{activeCollection.name}</h1>
-                  <p className="text-sm text-slate-500">{activeCollection.description}</p>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+              <input 
+                type="text" 
+                placeholder="Search entities..." 
+                className="rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 w-full md:w-64"
+              />
+            </div>
+            <button className="flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20">
+              <Plus className="h-4 w-4" /> Create New
+            </button>
+          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {collections.map((col, i) => (
+            <Card key={i} className="group cursor-pointer border-white/5 bg-slate-900/40 hover:bg-slate-900/60 transition-all hover:-translate-y-1">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className={`rounded-xl bg-slate-800 p-3 ${col.color}`}>
+                    <col.icon className="h-6 w-6" />
+                  </div>
+                  <button className="text-slate-600 hover:text-slate-400">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </button>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="border-white/10 hover:bg-white/5 rounded-xl text-slate-300">
-                      <Download className="h-4 w-4 mr-2" /> Export
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-slate-900 border-white/10 text-slate-300">
-                    <DropdownMenuItem onClick={() => handleExportJSON(activeCollection.id)} className="hover:bg-white/5 cursor-pointer">
-                      Download JSON
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleExportCSV(activeCollection)} className="hover:bg-white/5 cursor-pointer">
-                      Download CSV
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button
-                  onClick={() => navigateToEntry(activeCollection.id)}
-                  className="bg-sky-500 hover:bg-sky-400 text-white rounded-xl shadow-lg shadow-sky-500/20"
-                >
-                  Create Entry
-                </Button>
-              </div>
-            </div>
-            <Tabs defaultValue="content" className="w-full">
-              <TabsList className="bg-slate-900 border border-white/5 p-1 rounded-xl mb-6">
-                <TabsTrigger value="content" className="rounded-lg data-[state=active]:bg-sky-500">Content</TabsTrigger>
-                <TabsTrigger value="schema" className="rounded-lg data-[state=active]:bg-sky-500">Schema Architect</TabsTrigger>
-              </TabsList>
-              <TabsContent value="content" className="mt-0">
-                <EntryList
-                  key={`list-${activeCollection.id}`}
-                  collectionId={activeCollection.id}
-                  onEdit={(entryId) => navigateToEntry(activeCollection.id, entryId)}
-                />
-              </TabsContent>
-              <TabsContent value="schema" className="mt-0">
-                <SchemaEditor 
-                  key={`schema-${activeCollection.id}`}
-                  collectionId={activeCollection.id} 
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
-        {view.type === 'entry' && activeCollection && (
-          <div className="max-w-4xl mx-auto space-y-8 animate-scale-in">
+                <div className="mt-4 space-y-1">
+                  <h3 className="text-lg font-bold text-white">{col.name}</h3>
+                  <p className="text-xs text-slate-500">{col.count} entries found</p>
+                </div>
+                <div className="mt-4 flex items-center justify-between text-xs font-mono text-sky-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>OPEN COLLECTION</span>
+                  <ChevronRight className="h-3 w-3" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        {/* Static Mockup for Table */}
+        <div className="rounded-2xl border border-white/5 bg-slate-900/40 overflow-hidden">
+          <div className="p-4 border-b border-white/5 bg-slate-900/40 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigateToCollection(activeCollection.id)} className="rounded-xl border border-white/5">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <h1 className="text-2xl font-bold text-white">
-                {view.entryId ? 'Edit' : 'New'} {activeCollection.name.replace(/s$/, '')}
-              </h1>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Recent Activity</span>
+              <div className="h-4 w-px bg-white/10" />
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-tighter">
+                Synchronized
+              </div>
             </div>
-            <EntryForm
-              key={view.entryId || 'new-entry'}
-              collectionId={activeCollection.id}
-              entryId={view.entryId}
-              onComplete={() => navigateToCollection(activeCollection.id)}
-            />
+            <button className="text-slate-500 hover:text-slate-300">
+              <Filter className="h-4 w-4" />
+            </button>
           </div>
-        )}
+          <div className="p-8 flex flex-col items-center justify-center text-center space-y-4">
+            <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center">
+              <Database className="h-6 w-6 text-slate-700" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-slate-300 font-medium">Cosmos Indexer Active</h4>
+              <p className="text-sm text-slate-500">The content management protocol is currently in read-only mode for Phase 1.</p>
+            </div>
+            <div className="flex gap-2">
+              <div className="h-1 w-8 rounded-full bg-sky-500" />
+              <div className="h-1 w-8 rounded-full bg-slate-800" />
+              <div className="h-1 w-8 rounded-full bg-slate-800" />
+            </div>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );
