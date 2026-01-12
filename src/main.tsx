@@ -14,6 +14,8 @@ import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
 import { ArchitectPage } from '@/pages/ArchitectPage'
 import { ContentPage } from '@/pages/ContentPage'
+import { IslandsPage } from '@/pages/IslandsPage'
+import { SettingsPage } from '@/pages/SettingsPage'
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -29,6 +31,16 @@ const router = createBrowserRouter([
   {
     path: "/content",
     element: <ContentPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/islands",
+    element: <IslandsPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/settings",
+    element: <SettingsPage />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);
