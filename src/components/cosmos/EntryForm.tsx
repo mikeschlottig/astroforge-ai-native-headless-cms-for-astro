@@ -4,16 +4,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Sparkles, Save, Loader2 } from 'lucide-react';
+import { Sparkles, Save, Loader2, X } from 'lucide-react';
 import { chatService } from '@/lib/chat';
 import { toast } from 'sonner';
-export function EntryForm({ 
-  collectionId, 
-  entryId, 
-  onComplete 
-}: { 
-  collectionId: string; 
-  entryId?: string; 
+export function EntryForm({
+  collectionId,
+  entryId,
+  onComplete
+}: {
+  collectionId: string;
+  entryId?: string;
   onComplete: () => void;
 }) {
   const collections = useStore(s => s.collections);
@@ -38,21 +38,23 @@ export function EntryForm({
     setIsGenerating(field.key);
     try {
       const context = JSON.stringify(formData);
-      const prompt = `Generate a creative ${field.label} for a content entry in a collection called ${collection.name}. Context: ${context}`;
+      const prompt = `Generate a creative ${field.label} for a content entry in a collection called ${collection.name}. Context: ${context}. Return ONLY the value, no extra text.`;
       let result = '';
       await chatService.sendMessage(prompt, undefined, (chunk) => {
         result += chunk;
       });
-      setFormData(prev => ({ ...prev, [field.key]: result.trim() }));
-      toast.success(`AI generated ${field.label}`);
+      // Sanitize AI output (strip markdown backticks if AI returns them)
+      const cleanResult = result.replace(/```/g, '').trim();
+      setFormData(prev => ({ ...prev, [field.key]: cleanResult }));
+      toast.success(`AI generated content for ${field.label}`);
     } catch (e) {
-      toast.error('AI generation failed');
+      toast.error('AI generation failed. Check architect status.');
     } finally {
       setIsGenerating(null);
     }
   };
   return (
-    <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-8 space-y-8">
+    <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-8 space-y-8 shadow-2xl">
       <div className="grid gap-8">
         {collection.fields.map((field) => (
           <div key={field.id} className="space-y-3 group">
@@ -70,36 +72,54 @@ export function EntryForm({
               </button>
             </div>
             {field.type === 'rich-text' ? (
-              <Textarea 
+              <Textarea
                 value={formData[field.key] || ''}
                 onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                className="bg-slate-950 border-white/10 min-h-[160px] focus:ring-sky-500/20"
+                className="bg-slate-950 border-white/10 min-h-[160px] focus:ring-sky-500/20 text-slate-200"
                 placeholder={`Write ${field.label.toLowerCase()}...`}
               />
             ) : field.type === 'boolean' ? (
               <div className="flex items-center space-x-2 bg-slate-950 p-3 rounded-lg border border-white/10">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
+                  id={`field-${field.id}`}
                   checked={!!formData[field.key]}
                   onChange={(e) => setFormData({ ...formData, [field.key]: e.target.checked })}
-                  className="rounded border-white/20 bg-slate-900 text-sky-500"
+                  className="rounded border-white/20 bg-slate-900 text-sky-500 h-4 w-4 focus:ring-sky-500"
                 />
-                <span className="text-sm text-slate-300">Enabled / Active</span>
+                <label htmlFor={`field-${field.id}`} className="text-sm text-slate-300 cursor-pointer">Enabled / Active</label>
               </div>
             ) : (
-              <Input 
+              <Input
                 type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
                 value={formData[field.key] || ''}
                 onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                className="bg-slate-950 border-white/10 h-12 focus:ring-sky-500/20"
+                className="bg-slate-950 border-white/10 h-12 focus:ring-sky-500/20 text-slate-200"
                 placeholder={field.label}
               />
             )}
           </div>
         ))}
+        {collection.fields.length === 0 && (
+          <div className="p-10 text-center border-2 border-dashed border-white/5 rounded-xl">
+            <p className="text-slate-500 text-sm">No fields defined in schema. Edit schema in the Architect tab first.</p>
+          </div>
+        )}
       </div>
-      <div className="pt-8 border-t border-white/5 flex justify-end">
-        <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl min-w-[120px]">
+      <div className="pt-8 border-t border-white/5 flex justify-end gap-3">
+        <Button 
+          variant="outline" 
+          onClick={onComplete} 
+          className="border-white/10 hover:bg-white/5 text-slate-400 rounded-xl"
+        >
+          <X className="h-4 w-4 mr-2" />
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSave} 
+          disabled={collection.fields.length === 0}
+          className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl min-w-[140px] shadow-lg shadow-emerald-500/20"
+        >
           <Save className="h-4 w-4 mr-2" />
           Commit to Cosmos
         </Button>

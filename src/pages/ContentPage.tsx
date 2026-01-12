@@ -7,11 +7,7 @@ import { EntryForm } from '@/components/cosmos/EntryForm';
 import { EntryList } from '@/components/cosmos/EntryList';
 import {
   ChevronRight,
-  Database,
-  ArrowLeft,
-  Settings2,
-  FileJson,
-  Sparkles
+  ArrowLeft
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -31,7 +27,6 @@ export function ContentPage() {
   return (
     <AppLayout container>
       <div className="space-y-8 min-h-[60vh]">
-        {/* Dynamic Breadcrumbs */}
         <nav className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-slate-500">
           <button
             onClick={navigateToGrid}
@@ -58,7 +53,7 @@ export function ContentPage() {
           )}
         </nav>
         {view.type === 'grid' && (
-          <div className="space-y-10 animate-fade-in">
+          <div className="space-y-10 animate-fade-in" key="cosmos-grid">
             <div className="flex flex-col gap-2">
               <h1 className="text-4xl font-bold text-white tracking-tighter">Content Cosmos</h1>
               <p className="text-slate-500 max-w-2xl">
@@ -69,7 +64,7 @@ export function ContentPage() {
           </div>
         )}
         {view.type === 'collection' && activeCollection && (
-          <div className="space-y-6 animate-slide-up">
+          <div className="space-y-6 animate-slide-up" key={`col-${activeCollection.id}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={navigateToGrid} className="rounded-xl border border-white/5">
@@ -93,13 +88,17 @@ export function ContentPage() {
                 <TabsTrigger value="schema" className="rounded-lg data-[state=active]:bg-sky-500">Schema Architect</TabsTrigger>
               </TabsList>
               <TabsContent value="content" className="mt-0">
-                <EntryList 
-                  collectionId={activeCollection.id} 
-                  onEdit={(entryId) => navigateToEntry(activeCollection.id, entryId)} 
+                <EntryList
+                  key={`list-${activeCollection.id}`}
+                  collectionId={activeCollection.id}
+                  onEdit={(entryId) => navigateToEntry(activeCollection.id, entryId)}
                 />
               </TabsContent>
               <TabsContent value="schema" className="mt-0">
-                <SchemaEditor collectionId={activeCollection.id} />
+                <SchemaEditor 
+                  key={`schema-${activeCollection.id}`}
+                  collectionId={activeCollection.id} 
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -115,6 +114,7 @@ export function ContentPage() {
               </h1>
             </div>
             <EntryForm
+              key={view.entryId || 'new-entry'}
               collectionId={activeCollection.id}
               entryId={view.entryId}
               onComplete={() => navigateToCollection(activeCollection.id)}

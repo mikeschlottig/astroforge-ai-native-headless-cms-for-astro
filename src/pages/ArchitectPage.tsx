@@ -3,7 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { chatService } from '@/lib/chat';
 import { Message } from '../../worker/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, Sparkles, Code, Cpu, Wifi, WifiOff, AlertCircle, Copy, CheckCircle2, FileJson } from 'lucide-react';
+import { Send, Bot, User, Wifi, WifiOff, AlertCircle, Copy, CheckCircle2, FileJson } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,6 @@ export function ArchitectPage() {
   useEffect(() => {
     checkConnection();
     loadMessages();
-    // Check for initial prompt from navigation state
     if (location.state?.initialPrompt) {
       setInput(location.state.initialPrompt);
     }
@@ -48,7 +47,9 @@ export function ArchitectPage() {
     }
   };
   const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
+    // Sanitize markdown if present
+    const cleanText = text.replace(/```(json|astro|typescript|javascript|tsx)?/g, '').replace(/```/g, '').trim();
+    navigator.clipboard.writeText(cleanText);
     setCopiedId(id);
     toast.success('Snippet copied to workspace');
     setTimeout(() => setCopiedId(null), 2000);
@@ -74,39 +75,46 @@ export function ArchitectPage() {
     );
     if (response.success) {
       await loadMessages();
-      setStreamingContent('');
     } else {
       setIsOnline(false);
+      toast.error('Architect link lost. Check core status.');
     }
+    setStreamingContent('');
     setIsLoading(false);
   };
   const renderContent = (content: string, id: string) => {
-    const isJson = content.includes('{') && content.includes('}') && (content.includes('"fields"') || content.includes('"schema"'));
-    if (isJson) {
+    const jsonMatch = content.match(/```json\n([\s\S]*?)```/) || 
+                      (content.includes('{') && content.includes('"fields"') && content.includes('"key"'));
+    if (jsonMatch) {
+      const displayContent = typeof jsonMatch === 'object' && jsonMatch[1] ? jsonMatch[1] : content;
+      const intro = typeof jsonMatch === 'object' ? content.split('```json')[0].trim() : '';
       return (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-3 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-t-xl">
-            <div className="flex items-center gap-2">
-              <FileJson className="h-3.5 w-3.5 text-indigo-400" />
-              <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Schema Definition Detected</span>
+        <div className="space-y-4">
+          {intro && <div className="font-sans text-slate-300 leading-relaxed">{intro}</div>}
+          <div className="space-y-0">
+            <div className="flex items-center justify-between px-3 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-t-xl">
+              <div className="flex items-center gap-2">
+                <FileJson className="h-3.5 w-3.5 text-indigo-400" />
+                <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Schema Definition</span>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 text-[10px] text-indigo-400 hover:text-white hover:bg-indigo-500"
+                onClick={() => handleCopy(displayContent, id)}
+              >
+                {copiedId === id ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+                {copiedId === id ? "Copied" : "Import Schema"}
+              </Button>
             </div>
-            <Button 
-              size="sm" 
-              variant="ghost" 
-              className="h-6 text-[10px] text-indigo-400 hover:text-white hover:bg-indigo-500"
-              onClick={() => handleCopy(content, id)}
-            >
-              {copiedId === id ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
-              {copiedId === id ? "Copied" : "Import Schema"}
-            </Button>
-          </div>
-          <div className="bg-slate-950/50 p-4 rounded-b-xl font-mono text-[12px] text-sky-300 border border-white/5 border-t-0 whitespace-pre-wrap overflow-x-auto">
-            {content}
+            <div className="bg-slate-950/80 p-4 rounded-b-xl font-mono text-[12px] text-sky-300 border border-white/5 border-t-0 whitespace-pre-wrap overflow-x-auto">
+              {displayContent}
+            </div>
           </div>
         </div>
       );
     }
-    return <div className="font-sans whitespace-pre-wrap">{content}</div>;
+    return <div className="font-sans whitespace-pre-wrap leading-relaxed">{content}</div>;
   };
   return (
     <AppLayout className="h-screen flex flex-col overflow-hidden">
