@@ -1,18 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useStore, FieldType } from '@/lib/store';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Type, 
-  FileText, 
-  Hash, 
-  Calendar, 
-  Image as ImageIcon, 
-  CheckCircle2, 
+import { useNavigate } from 'react-router-dom';
+import {
+  Type,
+  FileText,
+  Hash,
+  Calendar,
+  Image as ImageIcon,
+  CheckCircle2,
   Plus,
   Trash2,
   Sparkles,
-  GripVertical
+  GripVertical,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 const FIELD_TYPES: { type: FieldType; label: string; icon: any }[] = [
@@ -24,8 +26,10 @@ const FIELD_TYPES: { type: FieldType; label: string; icon: any }[] = [
   { type: 'boolean', label: 'Boolean', icon: CheckCircle2 },
 ];
 export function SchemaEditor({ collectionId }: { collectionId: string }) {
+  const navigate = useNavigate();
   const collections = useStore(s => s.collections);
   const updateCollection = useStore(s => s.updateCollection);
+  const [isPrompting, setIsPrompting] = useState(false);
   const collection = collections.find(c => c.id === collectionId);
   if (!collection) return null;
   const addField = (type: FieldType) => {
@@ -43,6 +47,15 @@ export function SchemaEditor({ collectionId }: { collectionId: string }) {
     updateCollection(collectionId, {
       fields: collection.fields.filter(f => f.id !== fieldId)
     });
+  };
+  const handleAISchemaGen = () => {
+    setIsPrompting(true);
+    setTimeout(() => {
+      // Pass collection name as state to the Architect
+      navigate('/architect', { state: { 
+        initialPrompt: `Generate a JSON schema for a content collection named "${collection.name}". The purpose is ${collection.description}.` 
+      }});
+    }, 1000);
   };
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -69,10 +82,16 @@ export function SchemaEditor({ collectionId }: { collectionId: string }) {
             <span className="text-xs font-bold uppercase tracking-wider">AI Architect</span>
           </div>
           <p className="text-[10px] text-slate-500 leading-relaxed">
-            Need a complex structure? Ask the Architect to "Generate a schema for an E-commerce Product" in the chat.
+            Need a complex structure? Ask the Architect to generate the full JSON definition.
           </p>
-          <Button variant="outline" size="sm" className="w-full border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 text-[10px] h-8">
-            AUTO-GENERATE SCHEMA
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAISchemaGen}
+            disabled={isPrompting}
+            className="w-full border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 text-[10px] h-8"
+          >
+            {isPrompting ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : "AUTO-GENERATE SCHEMA"}
           </Button>
         </div>
       </div>
@@ -105,7 +124,7 @@ export function SchemaEditor({ collectionId }: { collectionId: string }) {
                     <div className="flex-1 grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[10px] uppercase tracking-tighter text-slate-600 font-bold">Label</label>
-                        <input 
+                        <input
                           value={field.label}
                           onChange={(e) => {
                             const newFields = [...collection.fields];
@@ -117,7 +136,7 @@ export function SchemaEditor({ collectionId }: { collectionId: string }) {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] uppercase tracking-tighter text-slate-600 font-bold">API Key</label>
-                        <input 
+                        <input
                           value={field.key}
                           onChange={(e) => {
                             const newFields = [...collection.fields];
@@ -128,7 +147,7 @@ export function SchemaEditor({ collectionId }: { collectionId: string }) {
                         />
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => removeField(field.id)}
                       className="p-2 text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                     >

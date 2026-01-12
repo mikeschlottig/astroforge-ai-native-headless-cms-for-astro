@@ -4,24 +4,26 @@ import { useStore } from '@/lib/store';
 import { CollectionGrid } from '@/components/cosmos/CollectionGrid';
 import { SchemaEditor } from '@/components/cosmos/SchemaEditor';
 import { EntryForm } from '@/components/cosmos/EntryForm';
-import { 
-  ChevronRight, 
-  Database, 
+import { EntryList } from '@/components/cosmos/EntryList';
+import {
+  ChevronRight,
+  Database,
   ArrowLeft,
   Settings2,
-  FileJson
+  FileJson,
+  Sparkles
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-type ViewState = 
+type ViewState =
   | { type: 'grid' }
   | { type: 'collection'; collectionId: string }
   | { type: 'entry'; collectionId: string; entryId?: string };
 export function ContentPage() {
   const [view, setView] = useState<ViewState>({ type: 'grid' });
   const collections = useStore(s => s.collections);
-  const activeCollection = view.type !== 'grid' 
-    ? collections.find(c => c.id === view.collectionId) 
+  const activeCollection = view.type !== 'grid'
+    ? collections.find(c => c.id === view.collectionId)
     : null;
   const navigateToGrid = () => setView({ type: 'grid' });
   const navigateToCollection = (id: string) => setView({ type: 'collection', collectionId: id });
@@ -31,7 +33,7 @@ export function ContentPage() {
       <div className="space-y-8 min-h-[60vh]">
         {/* Dynamic Breadcrumbs */}
         <nav className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-slate-500">
-          <button 
+          <button
             onClick={navigateToGrid}
             className="hover:text-sky-400 transition-colors"
           >
@@ -40,7 +42,7 @@ export function ContentPage() {
           {activeCollection && (
             <>
               <ChevronRight className="h-3 w-3" />
-              <button 
+              <button
                 onClick={() => navigateToCollection(activeCollection.id)}
                 className="hover:text-sky-400 transition-colors"
               >
@@ -78,7 +80,7 @@ export function ContentPage() {
                   <p className="text-sm text-slate-500">{activeCollection.description}</p>
                 </div>
               </div>
-              <Button 
+              <Button
                 onClick={() => navigateToEntry(activeCollection.id)}
                 className="bg-sky-500 hover:bg-sky-400 text-white rounded-xl shadow-lg shadow-sky-500/20"
               >
@@ -91,20 +93,10 @@ export function ContentPage() {
                 <TabsTrigger value="schema" className="rounded-lg data-[state=active]:bg-sky-500">Schema Architect</TabsTrigger>
               </TabsList>
               <TabsContent value="content" className="mt-0">
-                <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-12 text-center space-y-4">
-                  <div className="mx-auto h-12 w-12 rounded-2xl bg-slate-800 flex items-center justify-center">
-                    <Database className="h-6 w-6 text-slate-600" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-white">Entry Management</h3>
-                    <p className="text-sm text-slate-500 max-w-xs mx-auto">
-                      List view for {activeCollection.name} is coming in the next sync phase.
-                    </p>
-                  </div>
-                  <Button variant="outline" className="border-white/10" onClick={() => navigateToEntry(activeCollection.id)}>
-                    Add Your First Entry
-                  </Button>
-                </div>
+                <EntryList 
+                  collectionId={activeCollection.id} 
+                  onEdit={(entryId) => navigateToEntry(activeCollection.id, entryId)} 
+                />
               </TabsContent>
               <TabsContent value="schema" className="mt-0">
                 <SchemaEditor collectionId={activeCollection.id} />
@@ -122,9 +114,9 @@ export function ContentPage() {
                 {view.entryId ? 'Edit' : 'New'} {activeCollection.name.replace(/s$/, '')}
               </h1>
             </div>
-            <EntryForm 
-              collectionId={activeCollection.id} 
-              entryId={view.entryId} 
+            <EntryForm
+              collectionId={activeCollection.id}
+              entryId={view.entryId}
               onComplete={() => navigateToCollection(activeCollection.id)}
             />
           </div>

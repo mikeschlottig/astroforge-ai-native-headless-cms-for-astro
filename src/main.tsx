@@ -16,6 +16,7 @@ import { ArchitectPage } from '@/pages/ArchitectPage'
 import { ContentPage } from '@/pages/ContentPage'
 import { IslandsPage } from '@/pages/IslandsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { MediaVaultPage } from '@/pages/MediaVaultPage'
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -31,6 +32,11 @@ const router = createBrowserRouter([
   {
     path: "/content",
     element: <ContentPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/media",
+    element: <MediaVaultPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {

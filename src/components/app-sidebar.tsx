@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Bot,
   Database,
+  Image as ImageIcon,
   Settings,
   Sparkles,
   Zap,
@@ -30,6 +31,7 @@ export function AppSidebar(): JSX.Element {
     { title: "Dashboard", icon: LayoutDashboard, path: "/" },
     { title: "Architect", icon: Bot, path: "/architect" },
     { title: "Cosmos", icon: Database, path: "/content" },
+    { title: "Media Vault", icon: ImageIcon, path: "/media" },
     { title: "Islands", icon: Zap, path: "/islands" },
     { title: "Settings", icon: Settings, path: "/settings" },
   ];
@@ -85,9 +87,9 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu>
             {resourceLinks.map((link) => (
               <SidebarMenuItem key={link.url}>
-                <a 
-                  href={link.url} 
-                  target="_blank" 
+                <a
+                  href={link.url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between w-full h-9 px-3 text-xs font-medium text-slate-500 hover:text-sky-400 hover:bg-white/5 rounded-lg transition-all"
                 >
