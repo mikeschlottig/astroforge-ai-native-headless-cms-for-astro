@@ -121,6 +121,24 @@ export const useStore = create<ForgeState>()(
         url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop',
         altText: 'User profile placeholder',
         updatedAt: Date.now()
+      },
+      {
+        id: 'm4',
+        name: 'architecture-spec.pdf',
+        type: 'application/pdf',
+        size: '2.4 MB',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        altText: 'Technical specifications for Astro integration',
+        updatedAt: Date.now()
+      },
+      {
+        id: 'm5',
+        name: 'getting-started.md',
+        type: 'text/markdown',
+        size: '12 KB',
+        url: 'https://raw.githubusercontent.com/withastro/astro/main/README.md',
+        altText: 'Documentation onboarding guide',
+        updatedAt: Date.now()
       }
     ],
     setProject: (name) => set((state) => { state.currentProject = name }),

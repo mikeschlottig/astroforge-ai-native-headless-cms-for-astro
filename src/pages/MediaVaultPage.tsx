@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useStore } from '@/lib/store';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,11 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { 
   Search, 
-  Upload, 
-  Sparkles, 
-  Trash2, 
-  FileIcon, 
-  ImageIcon, 
+  Upload,
+  Sparkles,
+  Trash2,
+  FileText,
+  ImageIcon,
   MoreVertical,
   CheckCircle2,
   Loader2,
@@ -29,11 +29,15 @@ export function MediaVaultPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [generatingAltId, setGeneratingAltId] = useState<string | null>(null);
-  const filteredMedia = media.filter(m => 
-    m.name.toLowerCase().includes(search.toLowerCase()) || 
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const filteredMedia = media.filter(m =>
+    m.name.toLowerCase().includes(search.toLowerCase()) ||
     m.altText?.toLowerCase().includes(search.toLowerCase())
   );
-  const handleUpload = () => {
+  const processFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
     setIsUploading(true);
     let progress = 0;
     const interval = setInterval(() => {
@@ -42,22 +46,48 @@ export function MediaVaultPage() {
         clearInterval(interval);
         setUploadProgress(100);
         setTimeout(() => {
+          const isImage = file.type.startsWith('image/');
+          const newId = crypto.randomUUID();
           addMedia({
-            name: `upload-${Date.now()}.png`,
-            type: 'image/png',
-            size: '1.4 MB',
-            url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop',
-            altText: 'Generated abstract flow'
+            name: file.name,
+            type: file.type || 'application/octet-stream',
+            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+            url: isImage ? URL.createObjectURL(file) : '',
+            altText: 'Processing metadata...'
           });
           setIsUploading(false);
           setUploadProgress(0);
-          toast.success('Asset synchronized with R2 bucket');
+          toast.success(`${file.name} synchronized with R2 bucket`);
+          
+          setTimeout(() => {
+            const stateMedia = useStore.getState().media;
+            const added = stateMedia.find(m => m.name === file.name && m.altText === 'Processing metadata...');
+            if (added) {
+              generateAlt(added.id, added.name);
+            }
+          }, 1000);
         }, 500);
       } else {
         setUploadProgress(progress);
       }
     }, 400);
   };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    processFiles(e.dataTransfer.files);
+  };
+
   const generateAlt = async (id: string, name: string) => {
     setGeneratingAltId(id);
     try {
@@ -73,9 +103,34 @@ export function MediaVaultPage() {
       setGeneratingAltId(null);
     }
   };
+
+  const getFileIcon = (type: string, url: string) => {
+    if (type.startsWith('image/')) {
+      return <img src={url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop'} alt="preview" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />;
+    }
+    if (type.includes('pdf')) return <div className="flex flex-col items-center justify-center h-full text-rose-400"><FileText className="h-12 w-12 mb-2" /><span className="text-xs font-bold uppercase">PDF</span></div>;
+    if (type.includes('json')) return <div className="flex flex-col items-center justify-center h-full text-amber-400"><FileText className="h-12 w-12 mb-2" /><span className="text-xs font-bold uppercase">JSON</span></div>;
+    if (type.includes('markdown') || type.includes('md')) return <div className="flex flex-col items-center justify-center h-full text-sky-400"><FileText className="h-12 w-12 mb-2" /><span className="text-xs font-bold uppercase">MD</span></div>;
+    
+    return <div className="flex flex-col items-center justify-center h-full text-slate-400"><FileText className="h-12 w-12 mb-2" /><span className="text-xs font-bold uppercase">FILE</span></div>;
+  };
+
   return (
-    <AppLayout container>
-      <div className="space-y-10">
+    <AppLayout container contentClassName={isDragging ? 'opacity-50' : ''}>
+      <div 
+        className={`space-y-10 relative min-h-[80vh] ${isDragging ? 'ring-4 ring-sky-500/50 rounded-3xl bg-sky-500/5' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {isDragging && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center rounded-3xl bg-slate-950/80 backdrop-blur-sm pointer-events-none">
+            <div className="flex flex-col items-center gap-4 text-sky-400">
+              <Upload className="h-16 w-16 animate-bounce" />
+              <h2 className="text-2xl font-bold tracking-tight">Drop assets to upload</h2>
+            </div>
+          </div>
+        )}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <h1 className="text-4xl font-bold text-white tracking-tighter">Media Vault</h1>
@@ -91,8 +146,9 @@ export function MediaVaultPage() {
                 className="pl-10 bg-slate-900/50 border-white/5 focus:ring-sky-500/20 rounded-xl"
               />
             </div>
-            <Button 
-              onClick={handleUpload} 
+            <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => processFiles(e.target.files)} />
+            <Button
+              onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
               className="bg-sky-500 hover:bg-sky-400 text-white rounded-xl shadow-lg shadow-sky-500/20"
             >
@@ -126,13 +182,9 @@ export function MediaVaultPage() {
               >
                 <Card className="group relative h-full border-white/5 bg-slate-900/40 hover:bg-slate-900/60 transition-all duration-300 overflow-hidden rounded-2xl">
                   <div className="aspect-video relative overflow-hidden bg-slate-950">
-                    <img 
-                      src={asset.url} 
-                      alt={asset.altText} 
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                    {getFileIcon(asset.type, asset.url)}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <Button 
+                      <Button
                         size="icon" 
                         variant="ghost" 
                         className="bg-white/10 backdrop-blur-md text-white hover:bg-white/20"

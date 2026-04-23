@@ -22,7 +22,8 @@ import {
   ChevronRight,
   History,
   Image as ImageIcon,
-  ExternalLink
+  ExternalLink,
+  Download
 } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
 import { format } from 'date-fns';
@@ -38,9 +39,23 @@ const MOCK_DATA = [
 export function HomePage() {
   const entries = useStore(s => s.entries);
   const collections = useStore(s => s.collections);
+  const media = useStore(s => s.media);
   const recentMutations = [...entries]
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, 5);
+
+  const handleExport = () => {
+    const data = { collections, entries, media };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'astroforge-full-export.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Full CMS export generated successfully');
+  };
+
   return (
     <AppLayout container>
       <div className="space-y-10">
@@ -67,6 +82,10 @@ export function HomePage() {
                 <ImageIcon className="h-4 w-4" />
                 Media Vault
               </Link>
+              <Button onClick={handleExport} variant="outline" className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-300 backdrop-blur-sm transition-all hover:bg-white/10 flex items-center gap-2 h-[46px]">
+                <Download className="h-4 w-4" />
+                Full Export
+              </Button>
             </div>
           </div>
         </section>
