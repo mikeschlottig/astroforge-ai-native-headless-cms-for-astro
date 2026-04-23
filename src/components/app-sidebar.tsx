@@ -11,7 +11,8 @@ import {
   SquareArrowOutUpRight,
   Github,
   BookOpen,
-  Cloud
+  Cloud,
+  PenTool
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +32,7 @@ export function AppSidebar(): JSX.Element {
     { title: "Dashboard", icon: LayoutDashboard, path: "/" },
     { title: "Architect", icon: Bot, path: "/architect" },
     { title: "Cosmos", icon: Database, path: "/content" },
+    { title: "Editor", icon: PenTool, path: "/editor" },
     { title: "Media Vault", icon: ImageIcon, path: "/media" },
     { title: "Islands", icon: Zap, path: "/islands" },
     { title: "Settings", icon: Settings, path: "/settings" },

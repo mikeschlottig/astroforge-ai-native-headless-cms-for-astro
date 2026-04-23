@@ -17,6 +17,7 @@ import { ContentPage } from '@/pages/ContentPage'
 import { IslandsPage } from '@/pages/IslandsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { MediaVaultPage } from '@/pages/MediaVaultPage'
+import { EditorPage } from '@/pages/EditorPage'
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -47,6 +48,11 @@ const router = createBrowserRouter([
   {
     path: "/settings",
     element: <SettingsPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/editor",
+    element: <EditorPage />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);
