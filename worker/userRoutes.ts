@@ -4,10 +4,16 @@ import { ChatAgent } from './agent';
 import { API_RESPONSES } from './config';
 import { Env, getAppController, registerSession, unregisterSession } from "./core-utils";
 
+let userRoutesAdded = false;
+let coreRoutesAdded = false;
+
 /**
  * DO NOT MODIFY THIS FUNCTION. Only for your reference.
  */
 export function coreRoutes(app: Hono<{ Bindings: Env }>) {
+    if (coreRoutesAdded) return;
+    coreRoutesAdded = true;
+
     // Use this API for conversations. **DO NOT MODIFY**
     app.all('/api/chat/:sessionId/*', async (c) => {
         try {
@@ -20,18 +26,21 @@ export function coreRoutes(app: Hono<{ Bindings: Env }>) {
             headers: c.req.header(),
             body: c.req.method === 'GET' || c.req.method === 'DELETE' ? undefined : c.req.raw.body
         }));
-    
+
         } catch (error) {
         console.error('Agent routing error:', error);
-        return c.json({ 
-            success: false, 
-            error: API_RESPONSES.AGENT_ROUTING_FAILED 
+        return c.json({
+            success: false,
+            error: API_RESPONSES.AGENT_ROUTING_FAILED
         }, { status: 500 });
         }
     });
 }
 
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
+    if (userRoutesAdded) return;
+    userRoutesAdded = true;
+
     // Add your routes here
     /**
      * List all chat sessions
@@ -44,9 +53,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
             return c.json({ success: true, data: sessions });
         } catch (error) {
             console.error('Failed to list sessions:', error);
-            return c.json({ 
-                success: false, 
-                error: 'Failed to retrieve sessions' 
+            return c.json({
+                success: false,
+                error: 'Failed to retrieve sessions'
             }, { status: 500 });
         }
     });

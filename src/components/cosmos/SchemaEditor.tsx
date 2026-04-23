@@ -119,7 +119,10 @@ export function SchemaEditor({ collectionId }: { collectionId: string }) {
                       <GripVertical className="h-4 w-4" />
                     </div>
                     <div className="p-2 rounded-lg bg-slate-800 text-sky-400">
-                      {FIELD_TYPES.find(ft => ft.type === field.type)?.icon({ className: "h-4 w-4" })}
+                      {(() => {
+                        const fieldType = FIELD_TYPES.find(ft => ft.type === field.type);
+                        return fieldType ? React.createElement(fieldType.icon, { className: "h-4 w-4" }) : <Hash className="h-4 w-4" />;
+                      })()}
                     </div>
                     <div className="flex-1 grid grid-cols-2 gap-4">
                       <div className="space-y-1">
