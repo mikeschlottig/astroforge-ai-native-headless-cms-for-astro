@@ -1,6 +1,6 @@
 # Cloudflare AI Chat Agent
 
-[![[cloudflarebutton]]](https://deploy.workers.cloudflare.com)
+[![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/mikeschlottig/astroforge-ai-native-headless-cms-for-astro)]](https://deploy.workers.cloudflare.com)
 
 A production-ready, full-stack AI chat application built on Cloudflare Workers. Features multi-session conversations, streaming responses, tool calling (web search, weather, MCP integration), and a modern React UI with shadcn/ui components.
 
@@ -126,7 +126,7 @@ See `worker/userRoutes.ts` for custom routes.
    wrangler secret put SERPAPI_KEY  # Optional
    ```
 
-[![[cloudflarebutton]]](https://deploy.workers.cloudflare.com)
+[![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/mikeschlottig/astroforge-ai-native-headless-cms-for-astro)]](https://deploy.workers.cloudflare.com)
 
 **Custom Domain**: Bind via Cloudflare Dashboard > Workers > Triggers.
 
